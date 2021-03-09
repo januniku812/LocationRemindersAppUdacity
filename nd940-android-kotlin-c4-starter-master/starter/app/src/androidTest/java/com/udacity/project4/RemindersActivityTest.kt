@@ -1,0 +1,160 @@
+package com.udacity.project4
+
+import android.app.Application
+import android.os.IBinder
+import android.view.View
+import android.view.WindowManager
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.Root
+import androidx.test.espresso.ViewAssertion
+import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.LargeTest
+import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.locationreminders.data.local.LocalDB
+import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
+import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
+import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.util.DataBindingIdlingResource
+import com.udacity.project4.util.monitorActivity
+import com.udacity.project4.utils.EspressoIdlingResource
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.Description
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.not
+import org.hamcrest.TypeSafeMatcher
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.AutoCloseKoinTest
+import org.koin.test.get
+
+@RunWith(AndroidJUnit4::class)
+@LargeTest
+//END TO END test to black box test the app
+class RemindersActivityTest :
+    AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
+
+    private lateinit var repository: ReminderDataSource
+    private lateinit var appContext: Application
+
+    // data binding variable
+    private val dataBindingIdlingResource = DataBindingIdlingResource()
+
+    // Toast Matcher class
+    class ToastMatcher : TypeSafeMatcher<Root?>() {
+
+        // describeTo() method
+        override fun describeTo(description: Description) {
+            description.appendText("is toast")
+        }
+
+        // matchesSafely() method
+        override fun matchesSafely(root: Root?): Boolean {
+            if (root != null) {
+                val type: Int = root.windowLayoutParams.get().type
+                if (type == WindowManager.LayoutParams.TYPE_TOAST) {
+                    val windowToken: IBinder = root.decorView.windowToken
+                    val appToken: IBinder = root.decorView.applicationWindowToken
+                    if (windowToken === appToken) {
+                        //means this window isn't contained by any other windows.
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+    }
+
+    /**
+     * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
+     * at this step we will initialize Koin related code to be able to use it in out testing.
+     */
+    @Before
+    fun init() {
+        stopKoin()//stop the original app koin
+        appContext = getApplicationContext()
+        val myModule = module {
+            viewModel {
+                RemindersListViewModel(
+                    appContext,
+                    get() as ReminderDataSource
+                )
+            }
+            single {
+                SaveReminderViewModel(
+                    appContext,
+                    get() as ReminderDataSource
+                )
+            }
+            single { RemindersLocalRepository(get()) as ReminderDataSource }
+            single { LocalDB.createRemindersDao(appContext) }
+        }
+        //declare a new koin module
+        startKoin {
+            modules(listOf(myModule))
+        }
+        //Get our real repository
+        repository = get()
+
+        //clear the data to start fresh
+        runBlocking {
+            repository.deleteAllReminders()
+        }
+    }
+
+    @Before
+    fun registerIdlingResource() {
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+    }
+
+    @After
+    fun unregisterIdlingResource(){
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+    }
+
+    @Test
+    fun clickAddReminderFABCheckViews() =
+        runBlockingTest {
+        // Start up Tasks screen.
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+
+        // Espresso code will go here.
+        onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
+        // checking that all of the views in the reminder activity are gone as it goes to the save reminder activity
+        assertThat(withId(R.id.reminderssRecyclerView) as View, `is`(not(isDisplayed())))
+        assertThat(withId(R.id.noDataTextView) as View, `is`(not(isDisplayed())))
+        assertThat(withId(R.id.progressBar) as View, `is`(not(isDisplayed())))
+        assertThat(withId(R.id.addReminderFAB) as View, `is`(not(isDisplayed())))
+        // putting in fake titles and text of the save reminder fragment
+        onView(withId(R.id.reminderTitle)).perform(ViewActions.replaceText("Test title"))
+        onView(withId(R.id.reminderDescription)).perform(ViewActions.replaceText("Test description"))
+        // should navigate to select location fragment
+        onView(withId(R.id.save_location_button)).perform(ViewActions.click())
+        // clicking the save reminder button as all the required fields have been entered
+        onView(withId(R.id.saveReminder)).perform(ViewActions.click()) // should trigger a toast
+        // checking if toast is displayed
+        onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher()).check(ViewAssertions.matches(isDisplayed()))
+        // making sure the activity is closed
+        activityScenario.close()
+    }
+}

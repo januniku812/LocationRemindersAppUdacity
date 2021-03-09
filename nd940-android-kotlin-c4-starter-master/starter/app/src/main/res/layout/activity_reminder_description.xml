@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <!--Data item that holds the reminder details-->
+        <variable
+            name="reminderDataItem"
+            type="com.udacity.project4.locationreminders.reminderslist.ReminderDataItem" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:context=".locationreminders.reminderdescription.ReminderDescriptionActivity">
+
+        <TextView
+            android:layout_marginTop="15dp"
+            android:id="@+id/reminder_details_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif-thin"
+            android:text="Reminder Details"
+            android:textSize="@dimen/text_size_large"
+            app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/reminder_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif-thin"
+            android:text="@{reminderDataItem.title}"
+            android:textSize="@dimen/text_size_large"
+            android:hint="@string/hangout_with_friends_at_fruitealicious"
+            app:layout_constraintTop_toBottomOf="@id/reminder_details_title"
+            app:layout_constraintBottom_toTopOf="@id/delete_button"/>
+
+        <TextView
+            android:id="@+id/reminder_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif-thin"
+            android:text="@{reminderDataItem.title}"
+            android:textSize="@dimen/text_size_large"
+            android:hint="Hangout with friends with boba"
+            app:layout_constraintTop_toBottomOf="@id/reminder_title"/>
+
+        <Button
+            android:id="@+id/delete_button"
+            android:background="@color/delete_button_background"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:text="@string/delete_reminder"
+            app:layout_constraintStart_toStartOf="parent"
+            android:padding="@dimen/delete_button_padding_dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
