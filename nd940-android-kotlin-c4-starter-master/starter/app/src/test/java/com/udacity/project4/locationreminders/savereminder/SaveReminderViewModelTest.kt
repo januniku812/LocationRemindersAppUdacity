@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -18,16 +19,17 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.*
-import org.hamcrest.core.Is
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.stopKoin
+import org.robolectric.annotation.Config
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
+@Config(sdk = [Build.VERSION_CODES.P])
 class SaveReminderViewModelTest {
     // lateinit variables
     private lateinit var remindersDataSource: FakeDataSource
@@ -73,7 +75,9 @@ class SaveReminderViewModelTest {
         saveReminderViewModel.validateAndSaveReminder(notFaultyReminder) // should save this one
         saveReminderViewModel.validateAndSaveReminder(faultyReminder)
         // checking that the view model didn't enter/save the faulty reminder
-        assertThat(remindersDataSource.getReminder(faultyReminder.id), `is`(nullValue()))
+        val error = remindersDataSource.getReminder(faultyReminder.id)
+        error as Result.Error
+        assertThat(error.statusCode, `is`(nullValue()))
         // checking that the view model did eneter/save the not faulty reminder
         assertThat(remindersDataSource.getReminder(notFaultyReminder.id), `is`(notNullValue()))
     }
