@@ -58,7 +58,9 @@ class RemindersLocalRepositoryTest {
     @Test
     fun deleteAllRemindersShouldReturnNull() = runBlockingTest {
         remindersRepository.deleteAllReminders()
-        assertThat(remindersRepository.getReminders(), `is`(nullValue()))
+        val result = remindersRepository.getReminders()
+        result as Result.Success
+        assertThat(result.data, `is`(emptyList()))
     }
 
     @Test
