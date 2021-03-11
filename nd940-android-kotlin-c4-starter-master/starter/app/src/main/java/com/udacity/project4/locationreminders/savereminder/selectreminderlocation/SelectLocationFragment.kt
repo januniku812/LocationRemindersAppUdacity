@@ -10,11 +10,9 @@ import android.util.Log
 import android.view.*
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil.setContentView
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
@@ -63,6 +61,13 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnM
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val mapView: MapView = view.findViewById(R.id.map_view)
+        mapView.onCreate(savedInstanceState)
+        mapView.onResume()
+        mapView.getMapAsync(this)
+    }
 
     // menu-related methods
 
@@ -112,6 +117,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnM
         map.setMapStyle()
         map.setOnMapLongClickListener(this)
         map.setOnPoiClickListener(this)
+    }
+
+    init {
+        requestBackgroundPermission()
     }
 
     private fun requestBackgroundPermission(){
@@ -185,6 +194,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback, GoogleMap.OnM
     companion object {
         const val REQUEST_FOREGROUND_REQUEST_CODE = 1001
     }
+
+    // map click methods
 
     override fun onMapLongClick(latLng: LatLng) {
         map.clear() // clearing any other places they might have selected before
