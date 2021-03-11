@@ -44,7 +44,7 @@ class ReminderListFragment : Fragment() {
         setTitle(getString(R.string.app_name))
 
         binding.addReminderFAB.setOnClickListener{
-            findNavController().navigate(R.id.action_navigate_to_save_reminder)
+            findNavController().navigate(R.id.saveReminderFragment)
         }
 
         binding.refreshLayout.setOnRefreshListener {
@@ -68,7 +68,7 @@ class ReminderListFragment : Fragment() {
         setupRecyclerView()
 
         binding.addReminderFAB.setOnClickListener {
-            navigateToAddReminder()
+           findNavController().navigate(R.id.saveReminderFragment)
         }
     }
 
@@ -78,14 +78,13 @@ class ReminderListFragment : Fragment() {
         _viewModel.loadReminders()
     }
 
-    private fun navigateToAddReminder() {
+    private fun navigationCommandSetter() {
         // use the navigationCommand live data to navigate between the fragments
         _viewModel.navigationCommand.postValue(
             NavigationCommand.To(
-                ReminderListFragmentDirections.actionNavigateToSaveReminder()
+                ReminderListFragmentDirections.actionReminderListFragmentToSaveReminderFragment()
             )
         )
-        ReminderListFragmentDirections.actionNavigateToSaveReminder()
 
     }
 
