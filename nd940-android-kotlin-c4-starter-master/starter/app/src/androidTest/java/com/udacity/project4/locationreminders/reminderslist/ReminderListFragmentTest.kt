@@ -48,7 +48,7 @@ class ReminderListFragmentTest: AutoCloseKoinTest() {
 
     private lateinit var remindersListViewmodel: RemindersListViewModel
     private lateinit var remindersDataSource: ReminderDataSource
-//    TODO: test the navigation of the fragments.
+    //    TODO: test the navigation of the fragments.
 //    TODO: test the displayed data on the UI.
 //    TODO: add testing for the error messages.
     @Before
@@ -57,14 +57,14 @@ class ReminderListFragmentTest: AutoCloseKoinTest() {
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
-                    ApplicationProvider.getApplicationContext(),
-                    get() as ReminderDataSource
+                        ApplicationProvider.getApplicationContext(),
+                        get() as ReminderDataSource
                 )
             }
             single {
                 SaveReminderViewModel(
-                    ApplicationProvider.getApplicationContext(),
-                    get() as ReminderDataSource
+                        ApplicationProvider.getApplicationContext(),
+                        get() as ReminderDataSource
                 )
             }
             single { RemindersLocalRepository(get()) as ReminderDataSource }
@@ -92,13 +92,12 @@ class ReminderListFragmentTest: AutoCloseKoinTest() {
     @Test
     fun clickOnFabNavigateToSaveReminderFragment(){
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
-        val navController = NavController(ApplicationProvider.getApplicationContext())
-        navController.navInflater.inflate(R.navigation.nav_graph)
+        val navController = mock(NavController::class.java)
         scenario.onFragment {
             Navigation.setViewNavController(it.view!!, navController)
         }
         onView(withId(R.id.addReminderFAB)).perform(click())
-        verify(navController).navigate(ReminderListFragmentDirections.actionNavigateToSaveReminder())
+        verify(navController).navigate(R.id.saveReminderFragment)
     }
 
     @Test
@@ -124,7 +123,7 @@ class ReminderListFragmentTest: AutoCloseKoinTest() {
     fun checkAuthenticationStateUnauthenticated(){
         launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
         openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getInstrumentation().targetContext) // opening the menu
-        onView(withText(R.string.logout)).perform(click()) // clicking the logout option
+        onView(withId(R.id.logout)).perform(click()) // clicking the logout option
         // after clicking the logout button the authentication should be unauthenticated
         assertThat(
                 remindersListViewmodel.authenticationState.value, `is`(AuthenticationActivity.AuthenticationState.UNAUTHENTICATED)
