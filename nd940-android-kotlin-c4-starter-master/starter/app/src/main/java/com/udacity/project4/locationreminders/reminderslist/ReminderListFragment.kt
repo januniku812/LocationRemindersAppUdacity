@@ -7,12 +7,10 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
-import com.udacity.project4.authentication.AuthenticationViewModel
-import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
@@ -44,6 +42,10 @@ class ReminderListFragment : Fragment() {
 
         // setting the title that will be displayed in the action bar for this fragment
         setTitle(getString(R.string.app_name))
+
+        binding.addReminderFAB.setOnClickListener{
+            findNavController().navigate(R.id.action_navigate_to_save_reminder)
+        }
 
         binding.refreshLayout.setOnRefreshListener {
             _viewModel.loadReminders()
@@ -83,6 +85,8 @@ class ReminderListFragment : Fragment() {
                 ReminderListFragmentDirections.actionNavigateToSaveReminder()
             )
         )
+        ReminderListFragmentDirections.actionNavigateToSaveReminder()
+
     }
 
     private fun setupRecyclerView() {
@@ -113,8 +117,7 @@ class ReminderListFragment : Fragment() {
         startActivity(Intent(context, AuthenticationActivity::class.java))
 
         // setting the value of the authentication state to unauthenticated
-        _viewModel.authenticationState.value == AuthenticationActivity.AuthenticationState.UNAUTHENTICATED
-
+        _viewModel.setStateToUnauthenticated()
     }
 
 }
