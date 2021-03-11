@@ -13,6 +13,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentManager
+import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
@@ -26,6 +28,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.savereminder.selectreminderlocation.SelectLocationFragment
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 import java.util.concurrent.TimeUnit
@@ -45,6 +48,11 @@ class SaveReminderFragment : BaseFragment() {
         // initializing the binding variable
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_save_reminder, container, false)
+
+        binding.selectLocation.setOnClickListener {
+            //            Navigate to another fragment to get the user location
+            findNavController().navigate(R.id.selectLocationFragment)
+        }
 
         setDisplayHomeAsUpEnabled(true)
         setHasOptionsMenu(true)
@@ -76,8 +84,7 @@ class SaveReminderFragment : BaseFragment() {
         binding.lifecycleOwner = this
         binding.selectLocation.setOnClickListener {
             //            Navigate to another fragment to get the user location
-            _viewModel.navigationCommand.value =
-                NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
+            findNavController().navigate(R.id.selectLocationFragment)
         }
 
         binding.saveReminder.setOnClickListener {
@@ -92,7 +99,7 @@ class SaveReminderFragment : BaseFragment() {
                 title,
                 description.toString(),
                 location,
-                latitude.toString().toDouble(),
+                latitude.value,
                 longitude
             )
 
